@@ -42,33 +42,27 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc3;
-
-CRC_HandleTypeDef hcrc;
-
-DMA2D_HandleTypeDef hdma2d;
-
-LTDC_HandleTypeDef hltdc;
-
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim5;
-
-UART_HandleTypeDef huart1;
-
-SDRAM_HandleTypeDef hsdram1;
+ADC_HandleTypeDef hadc3;         // Obsługa przetwornika analogowo-cyfrowego (ADC)
+CRC_HandleTypeDef hcrc;          // Obsługa modułu CRC (Cyclic Redundancy Check)
+DMA2D_HandleTypeDef hdma2d;      // Obsługa kontrolera DMA2D (Direct Memory Access)
+LTDC_HandleTypeDef hltdc;        // Obsługa kontrolera LTDC (LCD-TFT Display Controller)
+TIM_HandleTypeDef htim2;         // Obsługa licznika TIM2
+TIM_HandleTypeDef htim5;         // Obsługa licznika TIM5
+UART_HandleTypeDef huart1;       // Obsługa interfejsu UART1
+SDRAM_HandleTypeDef hsdram1;     // Obsługa pamięci SDRAM
 
 /* USER CODE BEGIN PV */
-	uint32_t licznik = 0;
-	uint8_t stanWe1 = 0;
-	int16_t wartoscADC3 = 0;
-	uint16_t tablica[4];
-	float srednia = 0.0;
-	int16_t printSrednia = 0;
-	TS_StateTypeDef ts;
-	char xTouchStr[20];
-	uint8_t czestotliwoscZadana = 1;
-	float amplituda = 0.0;
-	float przesuniecie = 0;
+	uint32_t licznik = 0;            // Licznik ogólny
+	uint8_t stanWe1 = 0;             // Stan wejścia We1
+	int16_t wartoscADC3 = 0;         // Odczytana wartość z ADC3
+	uint16_t tablica[4];             // Tablica przechowująca wartości ADC
+	float srednia = 0.0;             // Średnia z wartości ADC
+	int16_t printSrednia = 0;        // Średnia w formacie całkowitym do wyświetlenia
+	TS_StateTypeDef ts;              // Stan ekranu dotykowego
+	char xTouchStr[20];              // Bufor dla wyświetlania współrzędnych dotyku
+	uint8_t czestotliwoscZadana = 1; // Żądana częstotliwość
+	float amplituda = 0.0;           // Amplituda sygnału
+	float przesuniecie = 0;          // Przesunięcie sygnału
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,12 +77,10 @@ static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /**
@@ -97,75 +89,80 @@ static void MX_TIM2_Init(void);
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
-
+	// Inicjalizacja diody LED na porcie LedH4
 	//HAL_GPIO_WritePin(LedH4_GPIO_Port, LedH4_Pin, 1);
   /* USER CODE END 1 */
 
   /* Enable the CPU Cache */
-
-  /* Enable I-Cache---------------------------------------------------------*/
-  SCB_EnableICache();
-
-  /* Enable D-Cache---------------------------------------------------------*/
-  SCB_EnableDCache();
+  /* Włączanie cache procesora */
+  SCB_EnableICache();  // Włączenie cache instrukcji
+  SCB_EnableDCache();  // Włączenie cache danych
 
   /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+  HAL_Init();  // Inicjalizacja biblioteki HAL
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  SystemClock_Config();
+  SystemClock_Config();  // Konfiguracja zegara systemowego
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_ADC3_Init();
-  MX_TIM5_Init();
-  MX_USART1_UART_Init();
-  MX_CRC_Init();
-  MX_DMA2D_Init();
-  MX_FMC_Init();
-  MX_LTDC_Init();
-  MX_TIM2_Init();
+  MX_GPIO_Init();        // Inicjalizacja GPIO
+  MX_ADC3_Init();        // Inicjalizacja ADC3
+  MX_TIM5_Init();        // Inicjalizacja TIM5
+  MX_USART1_UART_Init(); // Inicjalizacja UART1
+  MX_CRC_Init();         // Inicjalizacja CRC
+  MX_DMA2D_Init();       // Inicjalizacja DMA2D
+  MX_FMC_Init();         // Inicjalizacja FMC (Flexible Memory Controller)
+  MX_LTDC_Init();        // Inicjalizacja LTDC
+  MX_TIM2_Init();        // Inicjalizacja TIM2
   /* USER CODE BEGIN 2 */
+
+  // Uruchomienie przetwornika ADC w trybie z przerwaniami
   HAL_ADC_Start_IT(&hadc3);
+
+  // Uruchomienie PWM na TIM5 i TIM2 w trybie z przerwaniami
   HAL_TIM_PWM_Start_IT(&htim5, TIM_CHANNEL_4);
   HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
 
-  BSP_SDRAM_Init(); /* Initialize the SDRAM device */
-  __HAL_RCC_CRC_CLK_ENABLE(); /* Enable the CRC Module */
+  // Inicjalizacja pamięci SDRAM
+  BSP_SDRAM_Init();
+  // Włączenie zegara dla modułu CRC
+  __HAL_RCC_CRC_CLK_ENABLE();
+  // Inicjalizacja ekranu dotykowego
   BSP_TS_Init(480, 272);
+  // Inicjalizacja wyświetlacza LCD
   BSP_LCD_Init();
+  // Inicjalizacja warstwy wyświetlacza
   BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
+  // Włączenie wyświetlacza
   BSP_LCD_DisplayOn();
 
+  // Wybór warstwy i wyczyszczenie ekranu na niebiesko
   BSP_LCD_SelectLayer(0);
   BSP_LCD_Clear(LCD_COLOR_BLUE);
 
+  // Ustawienie koloru tekstu na czarny
   BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
+  // Wyświetlenie menu
   wypiszMenu();
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  ustawStanWe1();
-	  wypiszMenu();
+	  ustawStanWe1();  // Ustawienie stanu We1
+	  wypiszMenu();    // Wyświetlenie menu
 
+	  // Sterowanie PWM na podstawie stanu We1
 	  if(stanWe1 == 2 || stanWe1 == 1){
 		  HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_1);
 		  HAL_TIM_PWM_Stop_IT(&htim5, TIM_CHANNEL_4);
@@ -174,23 +171,25 @@ int main(void)
 		  HAL_TIM_PWM_Start_IT(&htim5, TIM_CHANNEL_4);
 	  }
 
-
+	  // Co 1 ms uruchomienie przetwornika ADC i obliczenie średniej
 	  if((uwTick % 1) == 0){
 		  HAL_ADC_Start_IT(&hadc3);
 		  obliczSrednia();
 	  }
 
+	  // Konwersja średniej do formatu całkowitego
 	  printSrednia = srednia * 100;
-	  //LCD
+
+	  // Odczyt stanu ekranu dotykowego
 	  BSP_TS_GetState(&ts);
+
+	  // Wyświetlenie współrzędnych dotyku
 	  sprintf(xTouchStr, "X: %3d", ts.touchX[0]);
 	  BSP_LCD_DisplayStringAt(20, 20, (uint8_t *)xTouchStr, LEFT_MODE);
 	  sprintf(xTouchStr, "Y: %3d", ts.touchY[0]);
 	  BSP_LCD_DisplayStringAt(20, 60, (uint8_t *)xTouchStr, LEFT_MODE);
 
-//	  sprintf(xTouchStr, "Wypelnienie: %3d", printSrednia);
-//	  BSP_LCD_DisplayStringAt(200, 20, (uint8_t *)xTouchStr, LEFT_MODE);
-
+	  // Aktualizacja liczników i sterowanie diodami LED
 	  if(uwTick >= 10){
 		  //HAL_GPIO_TogglePin(LedH4_GPIO_Port, LedH4_Pin);
 		  uwTick -= uwTick;
@@ -204,15 +203,15 @@ int main(void)
 		  if(stanWe1 == 2){
 			  HAL_GPIO_TogglePin(LedH4_GPIO_Port, LedH4_Pin);
 		  }
-
 		  licznik = 0;
 	  }
+
+	  // Aktualizacja zmiennych na podstawie dotyku
 	  uint32_t tempX = ts.touchX[0];
 	  uint32_t tempY = ts.touchY[0];
 
 	  if(stanWe1 != 2){
 		  if(tempX >= 5 && tempX <= 40 && tempY >= 250 && tempY <= 270){
-			  //HAL_GPIO_TogglePin(LedH4_GPIO_Port, LedH4_Pin);
 			  HAL_GPIO_WritePin(LedH4_GPIO_Port, LedH4_Pin, 1);
 			  stanWe1 = 0;
 		  }
@@ -220,9 +219,9 @@ int main(void)
 			  stanWe1 = 1;
 			  HAL_GPIO_WritePin(LedH4_GPIO_Port, LedH4_Pin, 0);
 		  }
-
 	  }
 
+	  // Aktualizacja częstotliwości na podstawie dotyku
 	  if(tempX >= 360 && tempX <= 370 && tempY >= 250 && tempY <= 270){
 		  czestotliwoscZadana = 5;
 	  }
@@ -232,22 +231,20 @@ int main(void)
 	  if(tempX >= 435 && tempX <= 480 && tempY >= 250 && tempY <= 270){
 		  czestotliwoscZadana = 20;
 	  }
-	  if(tempX >= 150 && tempX <= 310 && tempY >= 170 && tempY <= 220){
-		  //BSP_LCD_FillRect(150, 170, 160, 50);
 
+	  // Aktualizacja amplitudy na podstawie dotyku
+	  if(tempX >= 150 && tempX <= 310 && tempY >= 170 && tempY <= 220){
 		  amplituda = tempX;
 		  amplituda = (amplituda - 130) / 2;
 	  }
+
+	  // Wyświetlenie stanu pracy
 	  sprintf(xTouchStr, "Stan pracy: %1d", stanWe1);
 	  BSP_LCD_DisplayStringAt(150, 80, (uint8_t *)xTouchStr, LEFT_MODE);
-//	  else{
-//	  		  HAL_GPIO_WritePin(LedH4_GPIO_Port, LedH4_Pin, 0);
-//	  	  }
-
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
   }
+  /* USER CODE END WHILE */
+
+  /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
 }
 
@@ -1120,7 +1117,6 @@ void obliczSrednia(void){
 	uint8_t index = 0;
 	uint16_t suma = 0;
 
-
 	for(index; index < 4; index++){
 		suma += tablica[index];
 	}
@@ -1138,32 +1134,29 @@ void obliczSrednia(void){
 
 void wypiszMenu(void){
 	sprintf(xTouchStr, "Amplituda: %3d %%", (int)amplituda);
-	  BSP_LCD_DisplayStringAt(150, 20, (uint8_t *)xTouchStr, LEFT_MODE);
+	BSP_LCD_DisplayStringAt(150, 20, (uint8_t *)xTouchStr, LEFT_MODE);
 
-	  sprintf(xTouchStr, "Czestotliwosc: %3d Hz", czestotliwoscZadana);
-	  BSP_LCD_DisplayStringAt(100, 110, (uint8_t *)xTouchStr, LEFT_MODE);
+	sprintf(xTouchStr, "Czestotliwosc: %3d Hz", czestotliwoscZadana);
+	BSP_LCD_DisplayStringAt(100, 110, (uint8_t *)xTouchStr, LEFT_MODE);
 
+	sprintf(xTouchStr, "5");
+	BSP_LCD_DisplayStringAt(360, 250, (uint8_t *)xTouchStr, LEFT_MODE);
 
-	  sprintf(xTouchStr, "5");
-	  BSP_LCD_DisplayStringAt(360, 250, (uint8_t *)xTouchStr, LEFT_MODE);
+	sprintf(xTouchStr, "10");
+	BSP_LCD_DisplayStringAt(390, 250, (uint8_t *)xTouchStr, LEFT_MODE);
 
-	  sprintf(xTouchStr, "10");
-	  BSP_LCD_DisplayStringAt(390, 250, (uint8_t *)xTouchStr, LEFT_MODE);
+	sprintf(xTouchStr, "20");
+	BSP_LCD_DisplayStringAt(435, 250, (uint8_t *)xTouchStr, LEFT_MODE);
 
-	  sprintf(xTouchStr, "20");
-	  BSP_LCD_DisplayStringAt(435, 250, (uint8_t *)xTouchStr, LEFT_MODE);
+	sprintf(xTouchStr, "ON");
+	BSP_LCD_DisplayStringAt(10, 250, (uint8_t *)xTouchStr, LEFT_MODE);
 
-	  sprintf(xTouchStr, "ON");
-	  BSP_LCD_DisplayStringAt(10, 250, (uint8_t *)xTouchStr, LEFT_MODE);
-	  //BSP_LCD_FillRect(400, 65, 50, 50);
+	sprintf(xTouchStr, "OFF");
+	BSP_LCD_DisplayStringAt(60, 250, (uint8_t *)xTouchStr, LEFT_MODE);
 
-	  sprintf(xTouchStr, "OFF");
-	  BSP_LCD_DisplayStringAt(60, 250, (uint8_t *)xTouchStr, LEFT_MODE);
-
-	  BSP_LCD_FillRect(150, 170, 160, 50);
-
+	// Wypełnienie prostokąta na ekranie
+	BSP_LCD_FillRect(150, 170, 160, 50);
 }
-
 /* USER CODE END 4 */
 
 /**

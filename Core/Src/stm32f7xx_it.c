@@ -26,49 +26,45 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-	extern float srednia;
-	extern uint16_t tablica[4];
-	extern LTDC_HandleTypeDef hLtdcHandler;
-	extern uint8_t czestotliwoscZadana;
-	extern float amplituda;
-	extern float przesuniecie;
-	float aktualnaWartosc = 0.001;
-	float maksymalnaWartosc = 0.999;
-	float dodanaWartosc = 0.0;
+// Zmienne globalne
+extern float srednia;             // Średnia wartość ADC
+extern uint16_t tablica[4];       // Tablica przechowująca odczyty ADC
+extern LTDC_HandleTypeDef hLtdcHandler; // Obsługa kontrolera LTDC
+extern uint8_t czestotliwoscZadana; // Żądana częstotliwość PWM
+extern float amplituda;           // Amplituda sygnału PWM
+extern float przesuniecie;        // Przesunięcie fazowe sygnału PWM
 
+float aktualnaWartosc = 0.001;    // Aktualna wartość PWM
+float maksymalnaWartosc = 0.999;  // Maksymalna wartość PWM
+float dodanaWartosc = 0.0;        // Wartość dodawana do PWM
+uint16_t indeks = 0;               // index tablicy
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern ADC_HandleTypeDef hadc3;
-extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim5;
+extern ADC_HandleTypeDef hadc3;  // Obsługa ADC3
+extern TIM_HandleTypeDef htim2;  // Obsługa TIM2
+extern TIM_HandleTypeDef htim5;  // Obsługa TIM5
 /* USER CODE BEGIN EV */
-
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -80,13 +76,12 @@ extern TIM_HandleTypeDef htim5;
 void NMI_Handler(void)
 {
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
-
   /* USER CODE END NonMaskableInt_IRQn 0 */
-  /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-   while (1)
+  while (1)
   {
+    /* USER CODE BEGIN W1_NonMaskableInt_IRQn 0 */
+    /* USER CODE END W1_NonMaskableInt_IRQn 0 */
   }
-  /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
 /**
@@ -95,7 +90,6 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
@@ -110,7 +104,6 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
-
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
@@ -125,7 +118,6 @@ void MemManage_Handler(void)
 void BusFault_Handler(void)
 {
   /* USER CODE BEGIN BusFault_IRQn 0 */
-
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
   {
@@ -140,7 +132,6 @@ void BusFault_Handler(void)
 void UsageFault_Handler(void)
 {
   /* USER CODE BEGIN UsageFault_IRQn 0 */
-
   /* USER CODE END UsageFault_IRQn 0 */
   while (1)
   {
@@ -155,10 +146,8 @@ void UsageFault_Handler(void)
 void SVC_Handler(void)
 {
   /* USER CODE BEGIN SVCall_IRQn 0 */
-
   /* USER CODE END SVCall_IRQn 0 */
   /* USER CODE BEGIN SVCall_IRQn 1 */
-
   /* USER CODE END SVCall_IRQn 1 */
 }
 
@@ -168,10 +157,8 @@ void SVC_Handler(void)
 void DebugMon_Handler(void)
 {
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
-
   /* USER CODE END DebugMonitor_IRQn 0 */
   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
-
   /* USER CODE END DebugMonitor_IRQn 1 */
 }
 
@@ -181,10 +168,8 @@ void DebugMon_Handler(void)
 void PendSV_Handler(void)
 {
   /* USER CODE BEGIN PendSV_IRQn 0 */
-
   /* USER CODE END PendSV_IRQn 0 */
   /* USER CODE BEGIN PendSV_IRQn 1 */
-
   /* USER CODE END PendSV_IRQn 1 */
 }
 
@@ -194,11 +179,9 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -215,13 +198,17 @@ void SysTick_Handler(void)
 void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
-
   /* USER CODE END ADC_IRQn 0 */
-  HAL_ADC_IRQHandler(&hadc3);
+  HAL_ADC_IRQHandler(&hadc3);  // Obsługa przerwania ADC3
   /* USER CODE BEGIN ADC_IRQn 1 */
-  for(uint16_t index = 0; index < 4; index++){
-	  tablica[index] = ADC3->DR;
+  // Odczyt danych z rejestru ADC do tablicy
+  if(indeks >= 4){
+    indeks = 0;
   }
+
+   tablica[indeks] = ADC3->DR;
+
+  indeks++;
   /* USER CODE END ADC_IRQn 1 */
 }
 
@@ -231,17 +218,20 @@ void ADC_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-
   /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
+  HAL_TIM_IRQHandler(&htim2);  // Obsługa przerwania TIM2
   /* USER CODE BEGIN TIM2_IRQn 1 */
+  // Obliczanie wartości dodanej na podstawie żądanej częstotliwości
   dodanaWartosc = 1.0 / (25000.0 / czestotliwoscZadana);
 
+  // Aktualizacja aktualnej wartości PWM
   aktualnaWartosc += dodanaWartosc;
-    if(aktualnaWartosc > maksymalnaWartosc){
-  	  aktualnaWartosc = 0.001;
-    }
-    TIM2->CCR1 = aktualnaWartosc * TIM2->ARR * (amplituda * 0.01);
+  if (aktualnaWartosc > maksymalnaWartosc) {
+    aktualnaWartosc = 0.001;
+  }
+
+  // Ustawienie wartości PWM dla TIM2
+  TIM2->CCR1 = aktualnaWartosc * TIM2->ARR * (amplituda * 0.01);
   /* USER CODE END TIM2_IRQn 1 */
 }
 
@@ -251,29 +241,28 @@ void TIM2_IRQHandler(void)
 void TIM5_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM5_IRQn 0 */
-
   /* USER CODE END TIM5_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim5);
+  HAL_TIM_IRQHandler(&htim5);  // Obsługa przerwania TIM5
   /* USER CODE BEGIN TIM5_IRQn 1 */
-//  aktualnaWartosc += aktualnaWartosc;
-//  if(aktualnaWartosc > maksymalnaWartosc){
-//	  aktualnaWartosc = 0.001;0
-//  }
-  float akutalnePrzesuniecie = aktualnaWartosc;
+  // Przesunięcie fazowe sygnału PWM
+  float aktualnePrzesuniecie = aktualnaWartosc;
+  aktualnePrzesuniecie += przesuniecie;
 
-  akutalnePrzesuniecie += przesuniecie;
-
-  if(akutalnePrzesuniecie > maksymalnaWartosc){
-	  akutalnePrzesuniecie -= maksymalnaWartosc;
+  if (aktualnePrzesuniecie > maksymalnaWartosc) {
+    aktualnePrzesuniecie -= maksymalnaWartosc;
   }
 
-  TIM5->CCR4 = akutalnePrzesuniecie * TIM5->ARR * (amplituda * 0.01);
+  // Ustawienie wartości PWM dla TIM5
+  TIM5->CCR4 = aktualnePrzesuniecie * TIM5->ARR * (amplituda * 0.01);
   /* USER CODE END TIM5_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
+/**
+  * @brief This function handles LTDC global interrupt.
+  */
 void LTDC_IRQHandler(void)
 {
-	HAL_LTDC_IRQHandler(&hLtdcHandler);
+  HAL_LTDC_IRQHandler(&hLtdcHandler);  // Obsługa przerwania LTDC
 }
 /* USER CODE END 1 */
