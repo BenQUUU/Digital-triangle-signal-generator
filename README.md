@@ -40,15 +40,15 @@ To run this project, you need:
 
 ## Usage
 <p align="center">
-  <img src="https://imgur.com/a/mSVBKxJ" alt="Working system">
+  <img src="https://i.imgur.com/cbchq8M.jpeg" alt="Working system">
 </p>
 
 <p align="center">
-  <img src="https://imgur.com/a/WUiSe4I" alt="Oscilloscope output 1">
+  <img src="https://i.imgur.com/tlcD4fl.jpeg" alt="Oscilloscope output 1">
 </p>
 
 <p align="center">
-  <img src="https://imgur.com/a/6OgwV2T" alt="Oscilloscope output 2">
+  <img src="https://i.imgur.com/FEpm6yB.jpeg" alt="Oscilloscope output 2">
 </p>
 
 
