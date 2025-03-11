@@ -39,7 +39,18 @@ To run this project, you need:
 4. The analog triangular waveform will be outputted based on the selected parameters.
 
 ## Usage
-![Working system](https://imgur.com/a/mSVBKxJ)
+<p align="center">
+  <img src="https://imgur.com/a/mSVBKxJ" alt="Working system">
+</p>
+
+<p align="center">
+  <img src="https://imgur.com/a/WUiSe4I" alt="Oscilloscope output 1">
+</p>
+
+<p align="center">
+  <img src="https://imgur.com/a/6OgwV2T" alt="Oscilloscope output 2">
+</p>
+
 
 
 
